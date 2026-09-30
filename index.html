@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAVE - Sistema de Assistência Virtual Escolar</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <!-- CSS Design System -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/chatbot.css">
+  <link rel="stylesheet" href="css/timetable.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand-container">
+        <img src="assets/logo.svg" alt="SAVE Logo" class="brand-logo-img">
+        <div class="brand-text">
+          <h1>SAVE</h1>
+          <p>Sistema de Assistência Virtual Escolar</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Theme Controls -->
+        <div class="theme-selector" title="Alternar Tema de Coloração">
+          <button type="button" class="theme-btn" data-theme-val="light" title="Tema Claro">☀️ Claro</button>
+          <button type="button" class="theme-btn" data-theme-val="dark" title="Tema Escuro">🌙 Escuro</button>
+          <button type="button" class="theme-btn active" data-theme-val="auto" title="Tema Automático (Sistema)">💻 Auto</button>
+        </div>
+
+        <!-- User Profile Pill -->
+        <div class="user-profile-badge" id="header-user-badge" style="display: none;">
+          <div class="user-avatar-initials" id="header-user-avatar">U</div>
+          <div class="user-info-text">
+            <span class="user-display-name" id="header-user-name">Usuário</span>
+            <span class="user-role-tag" id="header-user-role">Aluno</span>
+          </div>
+          <span class="profile-badge-unique" id="header-user-regid" style="display: none;" title="ID Único do Sistema (Visível apenas para Administrador)">REG-2026-0001</span>
+        </div>
+
+        <!-- Logout Button -->
+        <button type="button" class="btn-logout" id="btn-header-logout" onclick="App.handleLogout()" style="display: none;" title="Sair do sistema">
+          🚪 Sair
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Views Container -->
+    <main class="main-wrapper">
+
+      <!-- ============================================================== -->
+      <!-- TELA 1: LOGIN E ACESSO                                        -->
+      <!-- ============================================================== -->
+      <section id="view-login" class="view-section active">
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
+          <div class="save-card" style="max-width:520px; width:100%; box-shadow:var(--shadow-lg); padding:2rem;">
+            <div style="text-align:center; margin-bottom:1.5rem;">
+              <img src="assets/logo.svg" alt="Logo SAVE" style="width:72px; height:72px; margin-bottom:0.75rem;">
+              <h2 style="font-size:1.5rem; font-weight:800; color:var(--save-crimson);">Acesso ao SAVE</h2>
+              <p style="font-size:0.85rem; color:var(--text-secondary);">Portal Acadêmico e Assistência Virtual Inteligente</p>
+            </div>
+
+            <!-- Profile Selector -->
+            <form id="form-login" onsubmit="App.handleLoginSubmit(event)">
+              <div class="form-group">
+                <label class="form-label" for="login-select-role">
+                  <span>Perfil de Acesso: <span class="required-star">*</span></span>
+                </label>
+                <select id="login-select-role" class="form-control" onchange="App.updateLoginFormUI(this.value)">
+                  <option value="aluno" selected>Aluno</option>
+                  <option value="responsavel">Responsável</option>
+                  <option value="professor">Professor</option>
+                  <option value="administrador">Administrador</option>
+                  <option value="assistente">Assistente</option>
+                </select>
+              </div>
+
+              <!-- Dynamic Identifier Field -->
+              <div class="form-group">
+                <label class="form-label" for="login-input-identifier" id="login-label-identifier">
+                  <span>Registro de Matrícula (RM): <span class="required-star">*</span></span>
+                </label>
+                <input type="text" id="login-input-identifier" class="form-control" placeholder="Ex: 20260101" required>
+                <span class="form-hint" id="login-hint-identifier">Informe o RM e a senha criada no primeiro acesso.</span>
+              </div>
+
+              <!-- Password Field -->
+              <div class="form-group">
+                <label class="form-label" for="login-input-password">
+                  <span>Senha de Acesso: <span class="required-star">*</span></span>
+                </label>
+                <input type="password" id="login-input-password" class="form-control" placeholder="••••••••" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.75rem; padding:0.75rem;">
+                Entrar no Sistema
+              </button>
+            </form>
+
+            <!-- Navigation Buttons -->
+            <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.25rem;">
+              <button type="button" class="btn btn-outline" style="width:100%;" onclick="App.openFirstAccessModal()">
+                ✨ Primeiro Acesso (Criar Senha)
+              </button>
+
+              <button type="button" class="btn btn-secondary" style="width:100%;" onclick="App.enterVisitorMode()">
+                🌐 Acessar Área de Visitante
+              </button>
+
+              <div style="text-align:center; margin-top:0.35rem;">
+                <button type="button" class="btn-slot-action" style="background:none; border:none; color:var(--save-crimson); font-weight:600; text-decoration:underline;" onclick="App.openRecoverAccessModal()">
+                  Esqueceu a senha? Recuperar Acesso
+                </button>
+              </div>
+            </div>
+
+            <!-- Fast Demo Accounts Pills (Facilitates Instant Evaluation) -->
+            <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px dashed var(--border-color);">
+              <p style="font-size:0.72rem; text-transform:uppercase; font-weight:700; color:var(--text-muted); margin-bottom:0.5rem; text-align:center;">
+                ⚡ Preenchimento Rápido para Avaliação / Testes:
+              </p>
+              <div style="display:flex; flex-wrap:wrap; gap:0.4rem; justify-content:center;">
+                <button type="button" class="chip-suggestion" onclick="App.fillDemoAccount('aluno')">👤 Aluno</button>
+                <button type="button" class="chip-suggestion" onclick="App.fillDemoAccount('responsavel')">👨‍👩‍👦 Responsável</button>
+                <button type="button" class="chip-suggestion" onclick="App.fillDemoAccount('professor')">👨‍🏫 Professor</button>
+                <button type="button" class="chip-suggestion" onclick="App.fillDemoAccount('administrador')">🛡️ Admin</button>
+                <button type="button" class="chip-suggestion" onclick="App.fillDemoAccount('assistente')">💼 Assistente</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TELA 2: ALUNO APÓS LOGIN                                       -->
+      <!-- ============================================================== -->
+      <section id="view-student" class="view-section">
+        <!-- Profile Banner -->
+        <div class="profile-banner">
+          <div class="profile-banner-details">
+            <div class="profile-item">
+              <span class="profile-item-label">Aluno</span>
+              <span class="profile-item-val" id="student-banner-nome">Lucas Gabriel de Oliveira</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">Registro de Matrícula (RM)</span>
+              <span class="profile-item-val" id="student-banner-rm">20260101</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">Curso / Turma</span>
+              <span class="profile-item-val" id="student-banner-curso">Técnico em Informática Integrado (1º Ano A)</span>
+            </div>
+          </div>
+          <span class="badge badge-accepted">Matrícula Regular</span>
+        </div>
+
+        <!-- Secondary Menu Tabs -->
+        <nav class="tabs-nav-container" id="student-tabs-nav">
+          <ul class="nav-tabs">
+            <li><button type="button" class="tab-btn active" data-tab="chatbot" onclick="App.switchTab('student', 'chatbot')"><span class="tab-icon">🤖</span> Chatbot SAVE</button></li>
+            <li><button type="button" class="tab-btn" data-tab="horario" onclick="App.switchTab('student', 'horario')"><span class="tab-icon">📅</span> Horário de Aulas</button></li>
+            <li><button type="button" class="tab-btn" data-tab="atestado" onclick="App.switchTab('student', 'atestado')"><span class="tab-icon">🩺</span> Entrega de Atestado</button></li>
+            <li><button type="button" class="tab-btn" data-tab="requerimentos" onclick="App.switchTab('student', 'requerimentos')"><span class="tab-icon">📄</span> Requerimentos</button></li>
+            <li><button type="button" class="tab-btn" data-tab="calendario" onclick="App.switchTab('student', 'calendario')"><span class="tab-icon">🗓️</span> Calendário Escolar</button></li>
+          </ul>
+        </nav>
+
+        <!-- Tab Content Area -->
+        <div class="tab-content-area" id="student-tab-content">
+          <!-- Tab Chatbot (Main) -->
+          <div class="tab-pane active" id="student-pane-chatbot">
+            <div class="chatbot-wrapper" id="student-chatbot">
+              <div class="chatbot-header">
+                <div class="chatbot-bot-info">
+                  <div class="bot-avatar-pulse">🤖</div>
+                  <div class="chatbot-title">
+                    <h3>Assistente Virtual SAVE</h3>
+                    <span class="chatbot-status">Online e pronto para ajudar</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chatbot-messages-container"></div>
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+              <div class="chat-suggestions-bar"></div>
+              <div class="chatbot-input-bar">
+                <input type="text" class="chat-input-text" placeholder="Digite sua pergunta ou dúvida escolar...">
+                <button type="button" class="btn-send-chat" title="Enviar mensagem">➤</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Horário -->
+          <div class="tab-pane" id="student-pane-horario">
+            <div class="section-heading">
+              <div>
+                <h2>📅 Planilha Completa de Horários</h2>
+                <p>Consulte todos os horários e disciplinas com filtros interativos para conferência.</p>
+              </div>
+            </div>
+            <!-- Filter Toolbar com filtros por turma, dia, período e professores -->
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Turma:</label>
+                <select id="student-filter-turma" class="form-control" onchange="App.filterMasterTimetable('student')"></select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Dia:</label>
+                <select id="student-filter-dia" class="form-control" onchange="App.filterMasterTimetable('student')">
+                  <option value="todos">Todos os Dias</option>
+                  <option value="segunda">Segunda-feira</option>
+                  <option value="terca">Terça-feira</option>
+                  <option value="quarta">Quarta-feira</option>
+                  <option value="quinta">Quinta-feira</option>
+                  <option value="sexta">Sexta-feira</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Período:</label>
+                <select id="student-filter-periodo" class="form-control" onchange="App.filterMasterTimetable('student')">
+                  <option value="todos">Todos os Horários</option>
+                  <option value="1">1ª Aula (07:30 - 08:20)</option>
+                  <option value="2">2ª Aula (08:20 - 09:10)</option>
+                  <option value="4">3ª Aula (09:30 - 10:20)</option>
+                  <option value="5">4ª Aula (10:20 - 11:10)</option>
+                  <option value="6">5ª Aula (11:10 - 12:00)</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Professor:</label>
+                <select id="student-filter-prof" class="form-control" onchange="App.filterMasterTimetable('student')"></select>
+              </div>
+              <div class="filter-item">
+                <input type="text" id="student-filter-search" class="form-control" placeholder="Buscar disciplina ou sala..." oninput="App.filterMasterTimetable('student')">
+              </div>
+            </div>
+            <div id="student-timetable-master"></div>
+          </div>
+
+          <!-- Tab Entrega Atestado -->
+          <div class="tab-pane" id="student-pane-atestado">
+            <div class="section-heading">
+              <div>
+                <h2>🩺 Envio de Atestado Médico</h2>
+                <p>Envie seu atestado médico tirando uma foto ou anexando o arquivo comprobatório.</p>
+              </div>
+            </div>
+
+            <div class="save-card">
+              <form id="form-student-atestado" onsubmit="App.handleCertificateFormSubmit(event, 'student')">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Nome do Aluno:</label>
+                    <input type="text" id="student-atestado-aluno-nome" class="form-control" readonly>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Registro de Matrícula (RM):</label>
+                    <input type="text" id="student-atestado-aluno-rm" class="form-control" readonly>
+                  </div>
+                </div>
+
+                <div class="form-grid-3">
+                  <div class="form-group">
+                    <label class="form-label">Data do Atestado: <span class="required-star">*</span></label>
+                    <input type="date" id="student-atestado-data" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Quantidade de Dias: <span class="required-star">*</span></label>
+                    <input type="number" id="student-atestado-dias" class="form-control" min="1" max="60" placeholder="Ex: 3" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Curso Matriculado: <span class="required-star">*</span></label>
+                    <select id="student-atestado-curso" class="form-control" required></select>
+                  </div>
+                </div>
+
+                <!-- Foto ou Upload -->
+                <div class="form-group">
+                  <label class="form-label">Comprovante do Atestado (Foto ou Arquivo): <span class="required-star">*</span></label>
+                  <div class="atestado-capture-box">
+                    <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
+                      <button type="button" class="btn btn-outline" onclick="App.openCameraModal('student')">
+                        📷 Tirar Foto com a Câmera
+                      </button>
+                      <label class="btn btn-secondary" style="cursor:pointer; margin:0;">
+                        📁 Fazer Upload de Arquivo
+                        <input type="file" accept="image/*,application/pdf" style="display:none;" onchange="App.handleCertificateFileUpload(event, 'student')">
+                      </label>
+                    </div>
+                    <img id="student-atestado-preview-img" class="snapshot-preview-img" alt="Visualização do Atestado">
+                    <input type="hidden" id="student-atestado-base64">
+                    <input type="hidden" id="student-atestado-filename">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top:1rem;">
+                  📤 Enviar Atestado para a Secretaria
+                </button>
+              </form>
+            </div>
+
+            <!-- Histórico de Atestados do Aluno -->
+            <div class="save-card">
+              <div class="save-card-header">
+                <div class="save-card-title"><span>📋 Histórico de Atestados Enviados</span></div>
+              </div>
+              <div id="student-atestados-container"></div>
+            </div>
+          </div>
+
+          <!-- Tab Requerimentos -->
+          <div class="tab-pane" id="student-pane-requerimentos">
+            <div class="section-heading">
+              <div>
+                <h2>📄 Gestão e Acompanhamento de Requerimentos</h2>
+                <p>Solicite documentos escolares e acompanhe o status em tempo real.</p>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="App.openNewRequirementModal()">
+                + Novo Requerimento
+              </button>
+            </div>
+            <div id="student-requerimentos-container"></div>
+          </div>
+
+          <!-- Tab Calendário -->
+          <div class="tab-pane" id="student-pane-calendario">
+            <div class="section-heading">
+              <div>
+                <h2>🗓️ Calendário Escolar</h2>
+                <p>Confira dias letivos, eventos, atividades e viagens acadêmicas programadas.</p>
+              </div>
+            </div>
+            <div id="student-calendar-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TELA 3: RESPONSÁVEL APÓS LOGIN                                 -->
+      <!-- ============================================================== -->
+      <section id="view-guardian" class="view-section">
+        <!-- Profile Banner -->
+        <div class="profile-banner">
+          <div class="profile-banner-details">
+            <div class="profile-item">
+              <span class="profile-item-label">Responsável Legal</span>
+              <span class="profile-item-val" id="guardian-banner-nome">Mariana Souza de Oliveira</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">Aluno Vinculado</span>
+              <span class="profile-item-val" id="guardian-banner-aluno-nome">Lucas Gabriel de Oliveira</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">RM do Aluno</span>
+              <span class="profile-item-val" id="guardian-banner-aluno-rm">20260101</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">Turma</span>
+              <span class="profile-item-val" id="guardian-banner-turma">1º Ano Info A</span>
+            </div>
+          </div>
+          <span class="badge badge-accepted">Acesso Familiar Ativo</span>
+        </div>
+
+        <!-- Secondary Menu Tabs -->
+        <nav class="tabs-nav-container" id="guardian-tabs-nav">
+          <ul class="nav-tabs">
+            <li><button type="button" class="tab-btn active" data-tab="chatbot" onclick="App.switchTab('guardian', 'chatbot')"><span class="tab-icon">🤖</span> Chatbot SAVE</button></li>
+            <li><button type="button" class="tab-btn" data-tab="horario" onclick="App.switchTab('guardian', 'horario')"><span class="tab-icon">📅</span> Horário de Aulas</button></li>
+            <li><button type="button" class="tab-btn" data-tab="atestado" onclick="App.switchTab('guardian', 'atestado')"><span class="tab-icon">🩺</span> Entrega de Atestado</button></li>
+            <li><button type="button" class="tab-btn" data-tab="requerimentos" onclick="App.switchTab('guardian', 'requerimentos')"><span class="tab-icon">📄</span> Requerimentos</button></li>
+            <li><button type="button" class="tab-btn" data-tab="calendario" onclick="App.switchTab('guardian', 'calendario')"><span class="tab-icon">🗓️</span> Calendário Escolar</button></li>
+          </ul>
+        </nav>
+
+        <div class="tab-content-area" id="guardian-tab-content">
+          <!-- Chatbot -->
+          <div class="tab-pane active" id="guardian-pane-chatbot">
+            <div class="chatbot-wrapper" id="guardian-chatbot">
+              <div class="chatbot-header">
+                <div class="chatbot-bot-info">
+                  <div class="bot-avatar-pulse">🤖</div>
+                  <div class="chatbot-title">
+                    <h3>Assistente Virtual SAVE (Família)</h3>
+                    <span class="chatbot-status">Pronto para tirar dúvidas e orientar</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chatbot-messages-container"></div>
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+              <div class="chat-suggestions-bar"></div>
+              <div class="chatbot-input-bar">
+                <input type="text" class="chat-input-text" placeholder="Pergunte sobre atestados, calendário, requerimentos...">
+                <button type="button" class="btn-send-chat" title="Enviar mensagem">➤</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Horário -->
+          <div class="tab-pane" id="guardian-pane-horario">
+            <div class="section-heading">
+              <div>
+                <h2>📅 Planilha Completa de Horários</h2>
+                <p>Acompanhe a grade curricular e professores de todas as turmas.</p>
+              </div>
+            </div>
+            <!-- Filter Toolbar com filtros por turma, dia, período e professores -->
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Turma:</label>
+                <select id="guardian-filter-turma" class="form-control" onchange="App.filterMasterTimetable('guardian')"></select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Dia:</label>
+                <select id="guardian-filter-dia" class="form-control" onchange="App.filterMasterTimetable('guardian')">
+                  <option value="todos">Todos os Dias</option>
+                  <option value="segunda">Segunda-feira</option>
+                  <option value="terca">Terça-feira</option>
+                  <option value="quarta">Quarta-feira</option>
+                  <option value="quinta">Quinta-feira</option>
+                  <option value="sexta">Sexta-feira</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Período:</label>
+                <select id="guardian-filter-periodo" class="form-control" onchange="App.filterMasterTimetable('guardian')">
+                  <option value="todos">Todos os Horários</option>
+                  <option value="1">1ª Aula (07:30 - 08:20)</option>
+                  <option value="2">2ª Aula (08:20 - 09:10)</option>
+                  <option value="4">3ª Aula (09:30 - 10:20)</option>
+                  <option value="5">4ª Aula (10:20 - 11:10)</option>
+                  <option value="6">5ª Aula (11:10 - 12:00)</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Professor:</label>
+                <select id="guardian-filter-prof" class="form-control" onchange="App.filterMasterTimetable('guardian')"></select>
+              </div>
+              <div class="filter-item">
+                <input type="text" id="guardian-filter-search" class="form-control" placeholder="Buscar na grade..." oninput="App.filterMasterTimetable('guardian')">
+              </div>
+            </div>
+            <div id="guardian-timetable-master"></div>
+          </div>
+
+          <!-- Atestado -->
+          <div class="tab-pane" id="guardian-pane-atestado">
+            <div class="section-heading">
+              <div>
+                <h2>🩺 Justificativa de Faltas / Entrega de Atestado</h2>
+                <p>Envie o atestado médico do estudante para validação pela secretaria.</p>
+              </div>
+            </div>
+
+            <div class="save-card">
+              <form id="form-guardian-atestado" onsubmit="App.handleCertificateFormSubmit(event, 'guardian')">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Nome do Aluno:</label>
+                    <input type="text" id="guardian-atestado-aluno-nome" class="form-control" readonly>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">RM do Aluno:</label>
+                    <input type="text" id="guardian-atestado-aluno-rm" class="form-control" readonly>
+                  </div>
+                </div>
+
+                <div class="form-grid-3">
+                  <div class="form-group">
+                    <label class="form-label">Data do Atestado: <span class="required-star">*</span></label>
+                    <input type="date" id="guardian-atestado-data" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Quantidade de Dias: <span class="required-star">*</span></label>
+                    <input type="number" id="guardian-atestado-dias" class="form-control" min="1" max="60" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Curso do Aluno: <span class="required-star">*</span></label>
+                    <select id="guardian-atestado-curso" class="form-control" required></select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Comprovante do Atestado: <span class="required-star">*</span></label>
+                  <div class="atestado-capture-box">
+                    <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
+                      <button type="button" class="btn btn-outline" onclick="App.openCameraModal('guardian')">
+                        📷 Tirar Foto com a Câmera
+                      </button>
+                      <label class="btn btn-secondary" style="cursor:pointer; margin:0;">
+                        📁 Fazer Upload de Arquivo
+                        <input type="file" accept="image/*,application/pdf" style="display:none;" onchange="App.handleCertificateFileUpload(event, 'guardian')">
+                      </label>
+                    </div>
+                    <img id="guardian-atestado-preview-img" class="snapshot-preview-img" alt="Visualização">
+                    <input type="hidden" id="guardian-atestado-base64">
+                    <input type="hidden" id="guardian-atestado-filename">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top:1rem;">
+                  📤 Enviar Atestado Médico
+                </button>
+              </form>
+            </div>
+
+            <div class="save-card">
+              <div class="save-card-header">
+                <div class="save-card-title"><span>📋 Atestados Enviados pelo Responsável</span></div>
+              </div>
+              <div id="guardian-atestados-container"></div>
+            </div>
+          </div>
+
+          <!-- Requerimentos -->
+          <div class="tab-pane" id="guardian-pane-requerimentos">
+            <div class="section-heading">
+              <div>
+                <h2>📄 Pedidos de Documentos do Estudante</h2>
+                <p>Solicite históricos, declarações e acompanhe o status em tempo real.</p>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="App.openNewRequirementModal()">
+                + Novo Pedido de Documento
+              </button>
+            </div>
+            <div id="guardian-requerimentos-container"></div>
+          </div>
+
+          <!-- Calendário -->
+          <div class="tab-pane" id="guardian-pane-calendario">
+            <div class="section-heading">
+              <div>
+                <h2>🗓️ Calendário e Atividades</h2>
+                <p>Acompanhe datas letivas, reuniões de pais, conselhos e eventos.</p>
+              </div>
+            </div>
+            <div id="guardian-calendar-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TELA 4: PROFESSOR APÓS LOGIN                                   -->
+      <!-- ============================================================== -->
+      <section id="view-teacher" class="view-section">
+        <div class="profile-banner">
+          <div class="profile-banner-details">
+            <div class="profile-item">
+              <span class="profile-item-label">Professor(a)</span>
+              <span class="profile-item-val" id="teacher-banner-nome">Carlos Eduardo da Silva</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">Vínculo Docente</span>
+              <span class="profile-item-val">Corpo Docente Efetivo</span>
+            </div>
+          </div>
+          <span class="badge badge-accepted">Painel do Docente</span>
+        </div>
+
+        <nav class="tabs-nav-container" id="teacher-tabs-nav">
+          <ul class="nav-tabs">
+            <li><button type="button" class="tab-btn active" data-tab="chatbot" onclick="App.switchTab('teacher', 'chatbot')"><span class="tab-icon">🤖</span> Chatbot SAVE</button></li>
+            <li><button type="button" class="tab-btn" data-tab="horario" onclick="App.switchTab('teacher', 'horario')"><span class="tab-icon">📅</span> Horário de Aulas</button></li>
+            <li><button type="button" class="tab-btn" data-tab="calendario" onclick="App.switchTab('teacher', 'calendario')"><span class="tab-icon">🗓️</span> Calendário Escolar</button></li>
+            <li><button type="button" class="tab-btn" data-tab="turmas" onclick="App.switchTab('teacher', 'turmas')"><span class="tab-icon">👥</span> Minhas Turmas e Alunos</button></li>
+          </ul>
+        </nav>
+
+        <div class="tab-content-area" id="teacher-tab-content">
+          <!-- Chatbot -->
+          <div class="tab-pane active" id="teacher-pane-chatbot">
+            <div class="chatbot-wrapper" id="teacher-chatbot">
+              <div class="chatbot-header">
+                <div class="chatbot-bot-info">
+                  <div class="bot-avatar-pulse">🤖</div>
+                  <div class="chatbot-title">
+                    <h3>Assistente Virtual SAVE (Docente)</h3>
+                    <span class="chatbot-status">Pronto para auxiliar com prazos, normas e aulas</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chatbot-messages-container"></div>
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+              <div class="chat-suggestions-bar"></div>
+              <div class="chatbot-input-bar">
+                <input type="text" class="chat-input-text" placeholder="Pergunte sobre fechamento de notas, conselho, normas...">
+                <button type="button" class="btn-send-chat" title="Enviar">➤</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Horário -->
+          <div class="tab-pane" id="teacher-pane-horario">
+            <div class="section-heading">
+              <div>
+                <h2>📅 Planilha Completa de Horários das Turmas</h2>
+                <p>Consulte a alocação de todas as turmas e professores.</p>
+              </div>
+            </div>
+            <!-- Filter Toolbar com filtros por turma, dia, período e professores -->
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Turma:</label>
+                <select id="teacher-timetable-filter-turma" class="form-control" onchange="App.filterMasterTimetable('teacher')"></select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Dia:</label>
+                <select id="teacher-timetable-filter-dia" class="form-control" onchange="App.filterMasterTimetable('teacher')">
+                  <option value="todos">Todos os Dias</option>
+                  <option value="segunda">Segunda-feira</option>
+                  <option value="terca">Terça-feira</option>
+                  <option value="quarta">Quarta-feira</option>
+                  <option value="quinta">Quinta-feira</option>
+                  <option value="sexta">Sexta-feira</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Período:</label>
+                <select id="teacher-timetable-filter-periodo" class="form-control" onchange="App.filterMasterTimetable('teacher')">
+                  <option value="todos">Todos os Horários</option>
+                  <option value="1">1ª Aula (07:30 - 08:20)</option>
+                  <option value="2">2ª Aula (08:20 - 09:10)</option>
+                  <option value="4">3ª Aula (09:30 - 10:20)</option>
+                  <option value="5">4ª Aula (10:20 - 11:10)</option>
+                  <option value="6">5ª Aula (11:10 - 12:00)</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Professor:</label>
+                <select id="teacher-timetable-filter-prof" class="form-control" onchange="App.filterMasterTimetable('teacher')"></select>
+              </div>
+              <div class="filter-item">
+                <input type="text" id="teacher-timetable-filter-search" class="form-control" placeholder="Buscar na planilha..." oninput="App.filterMasterTimetable('teacher')">
+              </div>
+            </div>
+            <div id="teacher-timetable-master"></div>
+          </div>
+
+          <!-- Calendário -->
+          <div class="tab-pane" id="teacher-pane-calendario">
+            <div class="section-heading">
+              <div>
+                <h2>🗓️ Calendário Escolar e Prazos Pedagógicos</h2>
+                <p>Prazos de entrega de notas, reuniões de conselho de classe, atividades e viagens.</p>
+              </div>
+            </div>
+            <div id="teacher-calendar-container"></div>
+          </div>
+
+          <!-- Turmas -->
+          <div class="tab-pane" id="teacher-pane-turmas">
+            <div class="section-heading">
+              <div>
+                <h2>👥 Turmas e Relação de Alunos</h2>
+                <p>Visualize suas turmas atribuídas e a lista completa de estudantes matriculados.</p>
+              </div>
+            </div>
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Filtrar Turma:</label>
+                <select id="teacher-filter-turma" class="form-control" onchange="App.filterTeacherTurmas()"></select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Filtrar Disciplina:</label>
+                <select id="teacher-filter-disc" class="form-control" onchange="App.filterTeacherTurmas()"></select>
+              </div>
+            </div>
+            <div id="teacher-turmas-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TELA 5: ADMINISTRADOR / ASSISTENTE APÓS LOGIN                  -->
+      <!-- ============================================================== -->
+      <section id="view-admin" class="view-section">
+        <div class="profile-banner">
+          <div class="profile-banner-details">
+            <div class="profile-item">
+              <span class="profile-item-label">Gestor Conectado</span>
+              <span class="profile-item-val" id="admin-banner-nome">Administrador</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">Cargo / Função</span>
+              <span class="profile-item-val" id="admin-banner-role">Administrador Geral</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">ID de Registro Único (Apenas Admin)</span>
+              <span class="profile-badge-unique" id="admin-banner-regid">REG-2026-0001</span>
+            </div>
+          </div>
+          <span class="badge badge-accepted">Acesso Administrativo</span>
+        </div>
+
+        <!-- Secondary Admin Tabs -->
+        <nav class="tabs-nav-container" id="admin-tabs-nav">
+          <ul class="nav-tabs">
+            <li><button type="button" class="tab-btn active" data-tab="chatbot" onclick="App.switchTab('admin', 'chatbot')"><span class="tab-icon">🤖</span> Chatbot</button></li>
+            <li id="tab-btn-admin-horarios" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="horario-planilha" onclick="App.switchTab('admin', 'horario-planilha')"><span class="tab-icon">📊</span> Horário Planilha</button></li>
+            <li id="tab-btn-admin-usuarios" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="usuarios" onclick="App.switchTab('admin', 'usuarios')"><span class="tab-icon">👥</span> Usuários</button></li>
+            <li id="tab-btn-admin-turmas" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="turmas" onclick="App.switchTab('admin', 'turmas')"><span class="tab-icon">🏫</span> Turmas</button></li>
+            <li id="tab-btn-admin-disciplinas" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="disciplinas" onclick="App.switchTab('admin', 'disciplinas')"><span class="tab-icon">📚</span> Atribuição Aulas</button></li>
+            <li id="tab-btn-admin-calendario" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="calendario" onclick="App.switchTab('admin', 'calendario')"><span class="tab-icon">🗓️</span> Calendário</button></li>
+            <li id="tab-btn-admin-chatbot-kb" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="chatbot-kb" onclick="App.switchTab('admin', 'chatbot-kb')"><span class="tab-icon">🧠</span> Base Chatbot</button></li>
+            <li id="tab-btn-admin-requerimentos" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="requerimentos" onclick="App.switchTab('admin', 'requerimentos')"><span class="tab-icon">📄</span> Requerimentos</button></li>
+            <li id="tab-btn-admin-atestados" class="admin-tab-item"><button type="button" class="tab-btn" data-tab="atestados" onclick="App.switchTab('admin', 'atestados')"><span class="tab-icon">🩺</span> Atestados</button></li>
+          </ul>
+        </nav>
+
+        <div class="tab-content-area" id="admin-tab-content">
+          <!-- Chatbot -->
+          <div class="tab-pane active" id="admin-pane-chatbot">
+            <div class="chatbot-wrapper" id="admin-chatbot">
+              <div class="chatbot-header">
+                <div class="chatbot-bot-info">
+                  <div class="bot-avatar-pulse">🤖</div>
+                  <div class="chatbot-title">
+                    <h3>Assistente Virtual SAVE (Administração)</h3>
+                    <span class="chatbot-status">Base Geral Conectada</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chatbot-messages-container"></div>
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+              <div class="chat-suggestions-bar"></div>
+              <div class="chatbot-input-bar">
+                <input type="text" class="chat-input-text" placeholder="Pergunte sobre regulamentos, relatórios, procedimentos...">
+                <button type="button" class="btn-send-chat" title="Enviar">➤</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Horário Planilha Interativa -->
+          <div class="tab-pane" id="admin-pane-horario-planilha">
+            <div class="section-heading">
+              <div>
+                <h2>📊 Cadastro e Gestão do Horário Escolar</h2>
+                <p>Planilha interativa com detecção de conflitos de professores, edição em rascunho e publicação oficial.</p>
+              </div>
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button type="button" class="btn btn-outline" onclick="App.openPeriodsConfigModal()">⚙️ Configurar Horários/Aulas</button>
+                <button type="button" class="btn btn-outline-danger" onclick="App.discardTimetableDraft()">↺ Descartar Rascunho</button>
+                <button type="button" class="btn btn-primary" onclick="App.publishTimetableDraft()">🚀 Publicar Horário Oficial</button>
+              </div>
+            </div>
+
+            <!-- Conflict Banner Alert -->
+            <div id="timetable-conflict-warning" class="timetable-conflict-alert"></div>
+
+            <!-- Toolbar Selector -->
+            <div class="timetable-toolbar">
+              <div style="display:flex; align-items:center; gap:0.75rem;">
+                <label class="form-label" style="margin:0;"><strong>Selecionar Turma:</strong></label>
+                <select id="admin-timetable-turma-select" class="form-control" style="max-width:320px;" onchange="App.refreshAdminTimetableSpreadsheet()"></select>
+              </div>
+              <div class="timetable-status-pill">
+                <span class="status-indicator-dot draft"></span>
+                <span style="font-size:0.82rem; font-weight:600;">Modo Rascunho Ativo (Clique nas células para editar)</span>
+              </div>
+            </div>
+
+            <!-- Grid Spreadsheet -->
+            <div id="admin-spreadsheet-grid-container" style="margin-top:1rem;"></div>
+
+            <!-- Master View of All Classes -->
+            <div class="section-heading" style="margin-top:2.5rem;">
+              <div>
+                <h3>📋 Planilha Completa de Todas as Turmas (Conferência Geral)</h3>
+                <p>Consulte todos os horários e disciplinas cadastrados com filtros por turma, dia, período e professor.</p>
+              </div>
+            </div>
+            <!-- Filter Toolbar com filtros por turma, dia, período e professores -->
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Turma:</label>
+                <select id="admin-timetable-filter-turma" class="form-control" onchange="App.filterMasterTimetable('admin')"></select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Dia:</label>
+                <select id="admin-timetable-filter-dia" class="form-control" onchange="App.filterMasterTimetable('admin')">
+                  <option value="todos">Todos os Dias</option>
+                  <option value="segunda">Segunda-feira</option>
+                  <option value="terca">Terça-feira</option>
+                  <option value="quarta">Quarta-feira</option>
+                  <option value="quinta">Quinta-feira</option>
+                  <option value="sexta">Sexta-feira</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Período:</label>
+                <select id="admin-timetable-filter-periodo" class="form-control" onchange="App.filterMasterTimetable('admin')">
+                  <option value="todos">Todos os Horários</option>
+                  <option value="1">1ª Aula (07:30 - 08:20)</option>
+                  <option value="2">2ª Aula (08:20 - 09:10)</option>
+                  <option value="4">3ª Aula (09:30 - 10:20)</option>
+                  <option value="5">4ª Aula (10:20 - 11:10)</option>
+                  <option value="6">5ª Aula (11:10 - 12:00)</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Professor:</label>
+                <select id="admin-timetable-filter-prof" class="form-control" onchange="App.filterMasterTimetable('admin')"></select>
+              </div>
+              <div class="filter-item">
+                <input type="text" id="admin-timetable-filter-search" class="form-control" placeholder="Buscar na planilha..." oninput="App.filterMasterTimetable('admin')">
+              </div>
+            </div>
+            <div id="admin-timetable-master"></div>
+          </div>
+
+          <!-- Usuários -->
+          <div class="tab-pane" id="admin-pane-usuarios">
+            <div class="section-heading">
+              <div>
+                <h2>👥 Cadastro e Controle de Usuários</h2>
+                <p>Gerenciamento de alunos, responsáveis vinculados, professores, assistentes e administradores.</p>
+              </div>
+              <div class="dropdown-action-container">
+                <button type="button" class="btn btn-primary" id="btn-admin-add-user" onclick="App.openAddUserModal()">
+                  + Criar Novo Usuário ▾
+                </button>
+                <div class="dropdown-action-menu">
+                  <button type="button" class="dropdown-action-item" onclick="App.openAddUserModal('aluno')">
+                    <span>🎓</span> <span>Cadastrar Aluno</span>
+                  </button>
+                  <button type="button" class="dropdown-action-item" onclick="App.openAddUserModal('professor')">
+                    <span>👨‍🏫</span> <span>Cadastrar Professor</span>
+                  </button>
+                  <button type="button" class="dropdown-action-item" onclick="App.openAddUserModal('assistente')">
+                    <span>💼</span> <span>Cadastrar Assistente</span>
+                  </button>
+                  <button type="button" class="dropdown-action-item" onclick="App.openAddUserModal('administrador')">
+                    <span>🛡️</span> <span>Cadastrar Administrador</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Menu de Criação de Novos Usuários em Cartões de Ação Rápida -->
+            <div class="user-creation-menu-box" id="admin-user-creation-menu">
+              <div class="user-creation-menu-header">
+                <div>
+                  <h3 style="font-size:1.02rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.45rem;">
+                    <span>✨ Menu de Criação de Novos Usuários</span>
+                  </h3>
+                  <p style="font-size:0.78rem; color:var(--text-muted);">
+                    Selecione o perfil desejado para iniciar o formulário de cadastro com regras automatizadas:
+                  </p>
+                </div>
+              </div>
+
+              <div class="user-creation-grid">
+                <!-- Card Aluno -->
+                <div class="user-creation-card" onclick="App.openAddUserModal('aluno')">
+                  <div>
+                    <div class="creation-card-icon">🎓</div>
+                    <div class="creation-card-title">Novo Aluno</div>
+                    <p class="creation-card-desc">
+                      Cadastra o estudante com RM e cria automaticamente os acessos dos responsáveis 1 e 2 vinculados.
+                    </p>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" style="width:100%;">
+                    + Cadastrar Aluno
+                  </button>
+                </div>
+
+                <!-- Card Professor -->
+                <div class="user-creation-card" onclick="App.openAddUserModal('professor')">
+                  <div>
+                    <div class="creation-card-icon">👨‍🏫</div>
+                    <div class="creation-card-title">Novo Professor</div>
+                    <p class="creation-card-desc">
+                      Cadastra o docente gerando automaticamente o identificador no padrão <code>nome.sobrenome</code>.
+                    </p>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" style="width:100%;">
+                    + Cadastrar Professor
+                  </button>
+                </div>
+
+                <!-- Card Assistente -->
+                <div class="user-creation-card" onclick="App.openAddUserModal('assistente')">
+                  <div>
+                    <div class="creation-card-icon">💼</div>
+                    <div class="creation-card-title">Novo Assistente</div>
+                    <p class="creation-card-desc">
+                      Cria perfil auxiliar com permissões personalizáveis para auxiliar nas rotinas da gestão escolar.
+                    </p>
+                  </div>
+                  <button type="button" class="btn btn-outline btn-sm" style="width:100%;">
+                    + Cadastrar Assistente
+                  </button>
+                </div>
+
+                <!-- Card Administrador -->
+                <div class="user-creation-card" onclick="App.openAddUserModal('administrador')">
+                  <div>
+                    <div class="creation-card-icon">🛡️</div>
+                    <div class="creation-card-title">Novo Administrador</div>
+                    <p class="creation-card-desc">
+                      Cadastra gestor escolar com acesso total, permissão de exclusão e visualização de IDs únicos.
+                    </p>
+                  </div>
+                  <button type="button" class="btn btn-outline btn-sm" style="width:100%;">
+                    + Cadastrar Admin
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Perfil:</label>
+                <select id="admin-filter-user-role" class="form-control" onchange="App.filterAdminUsers()">
+                  <option value="todos">Todos os Perfis</option>
+                  <option value="aluno">Alunos</option>
+                  <option value="responsavel">Responsáveis</option>
+                  <option value="professor">Professores</option>
+                  <option value="assistente">Assistentes</option>
+                  <option value="administrador">Administradores</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <input type="text" id="admin-filter-user-search" class="form-control" placeholder="Buscar por nome, RM, CPF ou login..." oninput="App.filterAdminUsers()">
+              </div>
+            </div>
+            <div id="admin-users-table-container"></div>
+          </div>
+
+          <!-- Turmas -->
+          <div class="tab-pane" id="admin-pane-turmas">
+            <div class="section-heading">
+              <div>
+                <h2>🏫 Cadastro de Turmas e Cursos</h2>
+                <p>Criação de cursos, turmas, divisão em grupos e enturmação de alunos.</p>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="App.openEditTurmaModal()">+ Nova Turma</button>
+            </div>
+            <div id="admin-turmas-table-container"></div>
+          </div>
+
+          <!-- Atribuição de Aulas e Professores -->
+          <div class="tab-pane" id="admin-pane-disciplinas">
+            <div class="section-heading">
+              <div>
+                <h2>📚 Atribuição de Aulas e Turmas aos Professores</h2>
+                <p>Crie disciplinas por turma (nome, sigla, aulas semanais) e associe o professor responsável.</p>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="App.openEditDisciplinaModal()">+ Nova Disciplina / Atribuição</button>
+            </div>
+            <div id="admin-disciplinas-table-container"></div>
+          </div>
+
+          <!-- Calendário -->
+          <div class="tab-pane" id="admin-pane-calendario">
+            <div class="section-heading">
+              <div>
+                <h2>🗓️ Cadastro do Calendário Escolar</h2>
+                <p>Gerencie eventos, prazos de entrega de notas, reuniões de conselho e atividades.</p>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="App.openEditCalendarModal()">+ Novo Evento no Calendário</button>
+            </div>
+            <div id="admin-calendar-table-container"></div>
+          </div>
+
+          <!-- Base Chatbot -->
+          <div class="tab-pane" id="admin-pane-chatbot-kb">
+            <div class="section-heading">
+              <div>
+                <h2>🧠 Base de Conhecimento do Chatbot SAVE</h2>
+                <p>Cadastre tutoriais, regulamentos, manuais e documentos para enriquecer as respostas inteligentes.</p>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="App.openEditKbModal()">+ Novo Conhecimento / Tutorial</button>
+            </div>
+            <div id="admin-kb-table-container"></div>
+          </div>
+
+          <!-- Requerimentos -->
+          <div class="tab-pane" id="admin-pane-requerimentos">
+            <div class="section-heading">
+              <div>
+                <h2>📄 Gestão de Requerimentos de Documentos</h2>
+                <p>Analise os pedidos de documentos escolares e atualize o status do fluxo de atendimento.</p>
+              </div>
+            </div>
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Status:</label>
+                <select id="admin-filter-req-status" class="form-control" onchange="App.filterAdminReqs()">
+                  <option value="todos">Todos os Status</option>
+                  <option value="Pendente">Pendente</option>
+                  <option value="Em Análise">Em Análise</option>
+                  <option value="Aguardando Assinatura">Aguardando Assinatura</option>
+                  <option value="Pronto para retirada">Pronto para retirada</option>
+                  <option value="Entregue">Entregue</option>
+                  <option value="Recusado">Recusado</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <input type="text" id="admin-filter-req-search" class="form-control" placeholder="Buscar por aluno, RM ou protocolo..." oninput="App.filterAdminReqs()">
+              </div>
+            </div>
+            <div id="admin-requerimentos-container"></div>
+          </div>
+
+          <!-- Atestados -->
+          <div class="tab-pane" id="admin-pane-atestados">
+            <div class="section-heading">
+              <div>
+                <h2>🩺 Gestão de Atestados Médicos</h2>
+                <p>Valide os atestados recebidos com visualização dos documentos e atribuição de status.</p>
+              </div>
+            </div>
+            <div class="filter-toolbar">
+              <div class="filter-item">
+                <label class="form-label" style="margin:0;">Status:</label>
+                <select id="admin-filter-at-status" class="form-control" onchange="App.filterAdminAts()">
+                  <option value="todos">Todos os Status</option>
+                  <option value="Pendente">Pendente</option>
+                  <option value="Recebido em Análise">Recebido em Análise</option>
+                  <option value="Aceito">Aceito</option>
+                  <option value="Recusado">Recusado</option>
+                </select>
+              </div>
+              <div class="filter-item">
+                <input type="text" id="admin-filter-at-search" class="form-control" placeholder="Buscar por aluno, RM ou protocolo..." oninput="App.filterAdminAts()">
+              </div>
+            </div>
+            <div id="admin-atestados-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TELA 6: VISITANTE                                              -->
+      <!-- ============================================================== -->
+      <section id="view-visitor" class="view-section">
+        <div class="profile-banner">
+          <div class="profile-banner-details">
+            <div class="profile-item">
+              <span class="profile-item-label">Comunidade Escolar</span>
+              <span class="profile-item-val">Área Pública do Visitante</span>
+            </div>
+            <div class="profile-item">
+              <span class="profile-item-label">Acesso</span>
+              <span class="profile-item-val">Informações Institucionais e Calendário Aberto</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.handleLogout()">
+            ← Voltar para o Login
+          </button>
+        </div>
+
+        <nav class="tabs-nav-container" id="visitor-tabs-nav">
+          <ul class="nav-tabs">
+            <li><button type="button" class="tab-btn active" data-tab="chatbot" onclick="App.switchTab('visitor', 'chatbot')"><span class="tab-icon">🤖</span> Chatbot Institucional</button></li>
+            <li><button type="button" class="tab-btn" data-tab="calendario" onclick="App.switchTab('visitor', 'calendario')"><span class="tab-icon">🗓️</span> Calendário Público</button></li>
+          </ul>
+        </nav>
+
+        <div class="tab-content-area" id="visitor-tab-content">
+          <!-- Chatbot com informações limitadas -->
+          <div class="tab-pane active" id="visitor-pane-chatbot">
+            <div class="chatbot-wrapper" id="visitor-chatbot">
+              <div class="chatbot-header">
+                <div class="chatbot-bot-info">
+                  <div class="bot-avatar-pulse">🤖</div>
+                  <div class="chatbot-title">
+                    <h3>Assistente SAVE (Informações Gerais)</h3>
+                    <span class="chatbot-status">Cursos, Ingresso, Normas e Atendimento</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chatbot-messages-container"></div>
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+              <div class="chat-suggestions-bar"></div>
+              <div class="chatbot-input-bar">
+                <input type="text" class="chat-input-text" placeholder="Tire dúvidas sobre cursos, matrículas, secretaria...">
+                <button type="button" class="btn-send-chat" title="Enviar">➤</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calendário -->
+          <div class="tab-pane" id="visitor-pane-calendario">
+            <div class="section-heading">
+              <div>
+                <h2>🗓️ Calendário e Eventos Públicos</h2>
+                <p>Consulte datas abertas à comunidade, semana tecnológica e início das aulas.</p>
+              </div>
+            </div>
+            <div id="visitor-calendar-container"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-copy">
+        <img src="assets/logo.svg" alt="SAVE" style="width:20px; height:20px;">
+        <span><strong>SAVE</strong> - Sistema de Assistência Virtual Escolar © 2026. Todos os direitos reservados.</span>
+      </div>
+      <div>
+        <span>Protótipo Acadêmico Web | HTML5, CSS3, JavaScript & LocalStorage</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAIS DO SISTEMA                                              -->
+  <!-- ============================================================== -->
+
+  <!-- Modal: Primeiro Acesso -->
+  <div class="modal-overlay" id="modal-primeiro-acesso">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">✨ Primeiro Acesso - Ativação e Criação de Senha</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-primeiro-acesso')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
+          Informe seus dados para conferência com o cadastro prévio efetuado pelo administrador da instituição:
+        </p>
+        <form id="form-primeiro-acesso" onsubmit="App.handleFirstAccessSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Perfil de Acesso: <span class="required-star">*</span></label>
+            <select id="primeiro-acesso-perfil" class="form-control" onchange="App.updateFirstAccessFormFields(this.value)">
+              <option value="aluno" selected>Aluno</option>
+              <option value="responsavel">Responsável</option>
+              <option value="professor">Professor</option>
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group" id="pa-group-rm">
+              <label class="form-label">Registro de Matrícula (RM) do Aluno: <span class="required-star">*</span></label>
+              <input type="text" id="primeiro-acesso-rm" class="form-control" placeholder="Ex: 20260102">
+            </div>
+            <div class="form-group" id="pa-group-nome">
+              <label class="form-label" id="pa-label-nome">Nome Completo: <span class="required-star">*</span></label>
+              <input type="text" id="primeiro-acesso-nome" class="form-control" placeholder="Seu nome conforme cadastro">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group" id="pa-group-resp-nome" style="display:none;">
+              <label class="form-label">Nome Completo do Responsável: <span class="required-star">*</span></label>
+              <input type="text" id="primeiro-acesso-resp-nome" class="form-control" placeholder="Nome do pai/mãe/responsável">
+            </div>
+            <div class="form-group" id="pa-group-aluno-nome" style="display:none;">
+              <label class="form-label">Nome Completo do Aluno: <span class="required-star">*</span></label>
+              <input type="text" id="primeiro-acesso-aluno-nome" class="form-control" placeholder="Nome completo do seu filho(a)">
+            </div>
+          </div>
+
+          <div class="form-group" id="pa-group-cpf">
+            <label class="form-label" id="pa-label-cpf">CPF do Aluno: <span class="required-star">*</span></label>
+            <input type="text" id="primeiro-acesso-cpf" class="form-control" placeholder="Ex: 777.888.999-00">
+          </div>
+
+          <!-- Password Creation with Strict Rules -->
+          <div class="form-grid-2" style="margin-top:1rem;">
+            <div class="form-group">
+              <label class="form-label">Criar Senha de Acesso: <span class="required-star">*</span></label>
+              <input type="password" id="primeiro-acesso-password" class="form-control" placeholder="Nova senha segura" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmar Senha: <span class="required-star">*</span></label>
+              <input type="password" id="primeiro-acesso-confirm-password" class="form-control" placeholder="Repita a senha" required>
+            </div>
+          </div>
+
+          <!-- Live Password Rules Card -->
+          <div class="password-requirements-card" id="primeiro-acesso-pwd-rules">
+            <p>Critérios obrigatórios da senha:</p>
+            <div class="pwd-rule-item rule-length invalid"><span class="rule-icon"></span> Mínimo de 8 e máximo de 16 caracteres</div>
+            <div class="pwd-rule-item rule-letter invalid"><span class="rule-icon"></span> No mínimo uma letra</div>
+            <div class="pwd-rule-item rule-number invalid"><span class="rule-icon"></span> No mínimo um número</div>
+            <div class="pwd-rule-item rule-special invalid"><span class="rule-icon"></span> No mínimo um caractere especial (!@#$%^&*...)</div>
+            <div class="pwd-rule-item rule-personal valid"><span class="rule-icon"></span> Não pode conter seu nome, RM ou CPF</div>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-primeiro-acesso')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Ativar Cadastro e Salvar Senha</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Recuperar Acesso -->
+  <div class="modal-overlay" id="modal-recuperar-acesso">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">🔐 Recuperar Acesso / Redefinir Senha</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-recuperar-acesso')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
+          Confirme seus dados para validar sua identidade e cadastrar uma nova senha:
+        </p>
+        <form id="form-recuperar-acesso" onsubmit="App.handleRecoverAccessSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Perfil do Usuário: <span class="required-star">*</span></label>
+            <select id="recuperar-perfil" class="form-control" onchange="App.updateRecoverAccessFormFields(this.value)">
+              <option value="aluno" selected>Aluno</option>
+              <option value="responsavel">Responsável</option>
+              <option value="professor">Professor</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="rec-group-rm">
+            <label class="form-label">Registro de Matrícula (RM): <span class="required-star">*</span></label>
+            <input type="text" id="recuperar-rm" class="form-control" placeholder="RM do Aluno">
+          </div>
+
+          <div class="form-group" id="rec-group-nome">
+            <label class="form-label" id="rec-label-nome">Nome Completo do Aluno: <span class="required-star">*</span></label>
+            <input type="text" id="recuperar-nome" class="form-control" placeholder="Nome completo cadastrado">
+          </div>
+
+          <div class="form-group" id="rec-group-cpf">
+            <label class="form-label" id="rec-label-cpf">CPF do Aluno: <span class="required-star">*</span></label>
+            <input type="text" id="recuperar-cpf" class="form-control" placeholder="CPF">
+          </div>
+
+          <div class="form-grid-2" style="margin-top:1rem;">
+            <div class="form-group">
+              <label class="form-label">Nova Senha: <span class="required-star">*</span></label>
+              <input type="password" id="recuperar-password" class="form-control" placeholder="Nova senha" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmar Senha: <span class="required-star">*</span></label>
+              <input type="password" id="recuperar-confirm-password" class="form-control" placeholder="Repita a senha" required>
+            </div>
+          </div>
+
+          <div class="password-requirements-card" id="recuperar-pwd-rules">
+            <p>Critérios obrigatórios da senha:</p>
+            <div class="pwd-rule-item rule-length invalid"><span class="rule-icon"></span> 8 a 16 caracteres</div>
+            <div class="pwd-rule-item rule-letter invalid"><span class="rule-icon"></span> Pelo menos 1 letra</div>
+            <div class="pwd-rule-item rule-number invalid"><span class="rule-icon"></span> Pelo menos 1 número</div>
+            <div class="pwd-rule-item rule-special invalid"><span class="rule-icon"></span> Pelo menos 1 caractere especial (!@#$...)</div>
+            <div class="pwd-rule-item rule-personal valid"><span class="rule-icon"></span> Não pode conter seu nome, RM ou CPF</div>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-recuperar-acesso')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Redefinir Senha</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Novo / Editar Requerimento -->
+  <div class="modal-overlay" id="modal-novo-requerimento">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="req-modal-title">📄 Solicitar Documento Escolar</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-novo-requerimento')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-new-requirement" onsubmit="App.handleRequirementFormSubmit(event)">
+          <input type="hidden" id="req-edit-id">
+
+          <div class="form-group">
+            <label class="form-label">Tipo de Documento Desejado: <span class="required-star">*</span></label>
+            <select id="req-tipo-documento" class="form-control" required>
+              <option value="">-- Selecione o Documento --</option>
+              <option value="Declaração de Matrícula">Declaração de Matrícula</option>
+              <option value="Declaração de frequência">Declaração de frequência</option>
+              <option value="Histórico escolar">Histórico escolar</option>
+              <option value="Diploma">Diploma</option>
+              <option value="Certificado">Certificado</option>
+              <option value="Declaração de conclusão de curso">Declaração de conclusão de curso</option>
+              <option value="Declaração de Escolaridade pública">Declaração de Escolaridade pública</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Motivo do Pedido: <span class="required-star">*</span></label>
+            <textarea id="req-motivo" class="form-control" rows="3" placeholder="Informe a finalidade do documento (ex: passe escolar, comprovação de estágio, etc.)" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Informações Complementares:</label>
+            <textarea id="req-info-complementar" class="form-control" rows="2" placeholder="Observações adicionais (opcional)"></textarea>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-novo-requerimento')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar e Enviar Requerimento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Câmera / Snapshot do Atestado -->
+  <div class="modal-overlay" id="modal-camera">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">📷 Capturar Foto do Atestado Médico</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-camera')">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem;">
+          Posicione o documento de forma legível em frente à câmera e clique em "Capturar Foto".
+        </p>
+        <div style="background:#000; border-radius:var(--radius-sm); overflow:hidden; max-width:480px; margin:0 auto;">
+          <video id="camera-video-stream" style="width:100%; height:auto; display:block;" autoplay playsinline></video>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-camera')">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="App.captureCameraSnapshot()">📸 Capturar Foto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Visualizador Genérico de Detalhes -->
+  <div class="modal-overlay" id="modal-view-details">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="view-details-title">Detalhes</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-view-details')">&times;</button>
+      </div>
+      <div class="modal-body" id="view-details-content"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-view-details')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Editar / Adicionar Aula no Horário (Admin) -->
+  <div class="modal-overlay" id="modal-edit-slot">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="slot-modal-title">Atribuir Aula</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-edit-slot')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-edit-slot" onsubmit="App.handleSlotFormSubmit(event)">
+          <input type="hidden" id="slot-modal-turma-id">
+          <input type="hidden" id="slot-modal-dia">
+          <input type="hidden" id="slot-modal-period-id">
+
+          <div class="form-group">
+            <label class="form-label">Disciplina / Professor Responsável: <span class="required-star">*</span></label>
+            <select id="slot-modal-disciplina" class="form-control" required></select>
+            <span class="form-hint">O sistema verificará conflitos de professores automaticamente ao salvar.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Local / Sala de Aula:</label>
+            <input type="text" id="slot-modal-sala" class="form-control" placeholder="Ex: Lab Info 01, Sala 202">
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-edit-slot')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar no Rascunho</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Configuração de Horários/Períodos de Aula (Admin) -->
+  <div class="modal-overlay" id="modal-config-periods">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">⚙️ Configuração dos Horários e Períodos das Aulas</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-config-periods')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+          Configure os horários de início e término de cada aula e do intervalo escolar:
+        </p>
+        <div class="table-responsive">
+          <table class="save-table">
+            <thead>
+              <tr>
+                <th>Rótulo do Período</th>
+                <th>Tipo</th>
+                <th>Horário Início</th>
+                <th>Horário Término</th>
+              </tr>
+            </thead>
+            <tbody id="periods-config-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-config-periods')">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="App.savePeriodsConfig()">Salvar Configuração</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cadastrar Novo Usuário (Admin) -->
+  <div class="modal-overlay" id="modal-add-user">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">👤 Cadastrar Novo Usuário no Sistema</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-add-user')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-user" onsubmit="App.handleAddUserSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Perfil a Criar: <span class="required-star">*</span></label>
+            <select id="add-user-role-select" class="form-control" onchange="App.updateAddUserFormFields(this.value)">
+              <option value="aluno" selected>Aluno (com criação automática de responsáveis)</option>
+              <option value="professor">Professor</option>
+              <option value="assistente">Assistente Administrativo</option>
+              <option value="administrador">Administrador</option>
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Nome Completo: <span class="required-star">*</span></label>
+              <input type="text" id="add-user-nome" class="form-control" placeholder="Nome completo" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CPF: <span class="required-star">*</span></label>
+              <input type="text" id="add-user-cpf" class="form-control" placeholder="000.000.000-00" required>
+            </div>
+          </div>
+
+          <!-- Campos para Aluno -->
+          <div id="add-user-group-student">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Registro de Matrícula (RM): <span class="required-star">*</span></label>
+                <input type="text" id="add-user-rm" class="form-control" placeholder="Ex: 20260105">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Turma / Série: <span class="required-star">*</span></label>
+                <select id="add-user-turma-select" class="form-control"></select>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Nome do Responsável 1: <span class="required-star">*</span></label>
+                <input type="text" id="add-user-resp1" class="form-control" placeholder="Nome do pai/mãe ou tutor">
+                <span class="form-hint">O usuário do responsável 1 será criado automaticamente.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nome do Responsável 2 (Opcional):</label>
+                <input type="text" id="add-user-resp2" class="form-control" placeholder="Segundo responsável">
+              </div>
+            </div>
+          </div>
+
+          <!-- Campos para Administrador / Assistente -->
+          <div id="add-user-group-staff" style="display:none;">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Nome de Usuário (Login): <span class="required-star">*</span></label>
+                <input type="text" id="add-user-username" class="form-control" placeholder="Ex: assistente.pedro">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Senha de Acesso: <span class="required-star">*</span></label>
+                <input type="password" id="add-user-password" class="form-control" placeholder="••••••••">
+              </div>
+            </div>
+
+            <div class="password-requirements-card" id="add-user-assistant-perms" style="display:none;">
+              <p>Permissões concedidas ao Assistente:</p>
+              <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.5rem; font-size:0.8rem;">
+                <label><input type="checkbox" id="perm-horarios" checked> Gerenciar Horários</label>
+                <label><input type="checkbox" id="perm-requerimentos" checked> Gerenciar Requerimentos</label>
+                <label><input type="checkbox" id="perm-atestados" checked> Gerenciar Atestados</label>
+                <label><input type="checkbox" id="perm-turmas" checked> Gerenciar Turmas</label>
+                <label><input type="checkbox" id="perm-calendario" checked> Gerenciar Calendário</label>
+                <label><input type="checkbox" id="perm-chatbot" checked> Base do Chatbot</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-add-user')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Cadastrar Usuário</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cadastrar / Editar Turma (Admin) -->
+  <div class="modal-overlay" id="modal-turma">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="turma-modal-title">Nova Turma / Curso</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-turma')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-turma" onsubmit="App.handleTurmaFormSubmit(event)">
+          <input type="hidden" id="turma-edit-id">
+
+          <div class="form-group">
+            <label class="form-label">Nome da Turma: <span class="required-star">*</span></label>
+            <input type="text" id="turma-nome" class="form-control" placeholder="Ex: 3º Ano Info B" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nome do Curso / Modalidade: <span class="required-star">*</span></label>
+            <input type="text" id="turma-curso" class="form-control" placeholder="Ex: Técnico em Informática Integrado" required>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Período: <span class="required-star">*</span></label>
+              <select id="turma-periodo" class="form-control">
+                <option value="Matutino">Matutino</option>
+                <option value="Vespertino">Vespertino</option>
+                <option value="Noturno">Noturno</option>
+                <option value="Integral">Integral</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Divisão em Grupos (separar por vírgula):</label>
+              <input type="text" id="turma-grupos" class="form-control" placeholder="Ex: Grupo A, Grupo B">
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-turma')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Turma</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cadastrar / Editar Disciplina e Atribuição (Admin) -->
+  <div class="modal-overlay" id="modal-disciplina">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="disc-modal-title">Nova Disciplina e Atribuição</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-disciplina')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-disciplina" onsubmit="App.handleDisciplinaFormSubmit(event)">
+          <input type="hidden" id="disc-edit-id">
+
+          <div class="form-group">
+            <label class="form-label">Escolha da Turma: <span class="required-star">*</span></label>
+            <select id="disc-turma-select" class="form-control" required></select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Nome da Disciplina: <span class="required-star">*</span></label>
+              <input type="text" id="disc-nome" class="form-control" placeholder="Ex: Programação Web" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sigla: <span class="required-star">*</span></label>
+              <input type="text" id="disc-sigla" class="form-control" placeholder="Ex: PW" required>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Aulas Semanais: <span class="required-star">*</span></label>
+              <input type="number" id="disc-aulas-semanais" class="form-control" min="1" max="10" value="4" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sala / Laboratório:</label>
+              <input type="text" id="disc-sala" class="form-control" placeholder="Ex: Lab Info 02">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Professor Responsável: <span class="required-star">*</span></label>
+            <select id="disc-professor-select" class="form-control" required></select>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-disciplina')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Atribuição</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cadastrar / Editar Evento do Calendário (Admin) -->
+  <div class="modal-overlay" id="modal-calendar-event">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="cal-modal-title">Evento do Calendário</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-calendar-event')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-calendar-event" onsubmit="App.handleCalendarFormSubmit(event)">
+          <input type="hidden" id="cal-edit-id">
+
+          <div class="form-group">
+            <label class="form-label">Título do Evento / Atividade: <span class="required-star">*</span></label>
+            <input type="text" id="cal-titulo" class="form-control" placeholder="Ex: Reunião de Conselho de Classe" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tipo: <span class="required-star">*</span></label>
+            <select id="cal-tipo" class="form-control" required>
+              <option value="letivo">Dia Letivo / Início das Aulas</option>
+              <option value="evento">Evento Acadêmico / Palestra</option>
+              <option value="atividade">Atividade / Avaliação / Simulado</option>
+              <option value="viagem">Viagem Pedagógica / Visita Técnica</option>
+              <option value="notas">Prazo de Entrega de Notas</option>
+              <option value="conselho">Conselho Escolar / Reunião de Classe</option>
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Data Início: <span class="required-star">*</span></label>
+              <input type="date" id="cal-data-inicio" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data Término (Opcional):</label>
+              <input type="date" id="cal-data-fim" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Descrição / Observações:</label>
+            <textarea id="cal-descricao" class="form-control" rows="3" placeholder="Detalhes sobre horários, turmas envolvidas e orientações"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label><input type="checkbox" id="cal-publico" checked> Visível na área pública de visitantes</label>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-calendar-event')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Evento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Cadastrar / Editar Conhecimento do Chatbot (Admin) -->
+  <div class="modal-overlay" id="modal-kb">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <div class="modal-title" id="kb-modal-title">Base de Conhecimento do Chatbot</div>
+        <button type="button" class="modal-close" onclick="App.closeModal('modal-kb')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-kb" onsubmit="App.handleKbFormSubmit(event)">
+          <input type="hidden" id="kb-edit-id">
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Título / Assunto: <span class="required-star">*</span></label>
+              <input type="text" id="kb-titulo" class="form-control" placeholder="Ex: Regras de Estágio Supervisionado" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tipo de Documento / Fonte:</label>
+              <input type="text" id="kb-tipo-documento" class="form-control" placeholder="Ex: Manual do Aluno Art. 12">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Categoria:</label>
+              <select id="kb-categoria" class="form-control">
+                <option value="documentos">Requerimentos & Documentos</option>
+                <option value="atestados">Atestados Médicos</option>
+                <option value="horarios">Horários & Aulas</option>
+                <option value="regulamento">Regulamento & Normas</option>
+                <option value="cursos">Cursos & Matrículas</option>
+                <option value="contato">Atendimento & Contato</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Palavras-Chave (separadas por vírgula):</label>
+              <input type="text" id="kb-palavras-chave" class="form-control" placeholder="estagio, seguro, convenio, horas">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Resposta / Conteúdo fornecido pelo Chatbot: <span class="required-star">*</span></label>
+            <textarea id="kb-resposta" class="form-control" rows="4" placeholder="Explique passo a passo o procedimento ou regulamento que o chatbot responderá ao usuário..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label><input type="checkbox" id="kb-publico" checked> Disponibilizar resposta para Visitantes (Público)</label>
+          </div>
+
+          <div class="modal-footer" style="padding:1rem 0 0 0; background:none; border:none;">
+            <button type="button" class="btn btn-outline" onclick="App.closeModal('modal-kb')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Conhecimento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/timetable.js"></script>
+  <script src="js/requirements.js"></script>
+  <script src="js/certificates.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/chatbot.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Filter Listeners Helpers -->
+  <script>
+    // Filters for Student Timetable
+    App.filterStudentTimetable = function() {
+      const dia = document.getElementById('student-filter-dia').value;
+      const search = document.getElementById('student-filter-search').value;
+      const u = App.currentUser;
+      TimetableService.renderMasterTimetable('student-timetable-master', {
+        turmaFilter: (u && u.turmaId) ? u.turmaId : 'turma-1a',
+        diaFilter: dia,
+        search: search
+      });
+    };
+
+    // Filters for Teacher Turmas
+    App.filterTeacherTurmas = function() {
+      const turma = document.getElementById('teacher-filter-turma').value;
+      const disc = document.getElementById('teacher-filter-disc').value;
+      if (App.currentUser) {
+        AdminService.renderTeacherTurmas('teacher-turmas-container', App.currentUser.regId, {
+          turmaFilter: turma,
+          discFilter: disc
+        });
+      }
+    };
+
+    // Filters for Admin Users
+    App.filterAdminUsers = function() {
+      const role = document.getElementById('admin-filter-user-role').value;
+      const search = document.getElementById('admin-filter-user-search').value;
+      App.refreshAdminUsersTable(role, search);
+    };
+
+    // Filters for Admin Reqs
+    App.filterAdminReqs = function() {
+      const status = document.getElementById('admin-filter-req-status').value;
+      const search = document.getElementById('admin-filter-req-search').value;
+      RequirementsService.renderAdminManagement('admin-requerimentos-container', {
+        statusFilter: status,
+        search: search
+      });
+    };
+
+    // Filters for Admin Atestados
+    App.filterAdminAts = function() {
+      const status = document.getElementById('admin-filter-at-status').value;
+      const search = document.getElementById('admin-filter-at-search').value;
+      CertificatesService.renderAdminManagement('admin-atestados-container', {
+        statusFilter: status,
+        search: search
+      });
+    };
+  </script>
+</body>
+</html>
